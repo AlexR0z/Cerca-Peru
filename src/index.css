@@ -1,0 +1,24 @@
+@import 'leaflet/dist/leaflet.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body { @apply bg-slate-100 text-slate-800 antialiased; }
+  :focus-visible { @apply outline outline-[3px] outline-offset-2 outline-blue-600; }
+}
+
+@layer components {
+  .btn { @apply inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold transition active:scale-[0.98] disabled:opacity-50; }
+  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700; }
+  .btn-outline { @apply btn border-2 border-brand-600 bg-white text-brand-600 hover:bg-brand-50; }
+  .btn-light { @apply btn bg-white text-brand-600 hover:bg-brand-50; }
+  .card { @apply rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200; }
+  .field { @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-base placeholder:text-slate-400; }
+  .label { @apply mb-1.5 block text-base font-semibold text-slate-900; }
+  .chip { @apply flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl border-2 border-slate-200 bg-white px-1 text-sm font-medium text-slate-700; }
+  .chip[aria-pressed='true'] { @apply border-brand-600 bg-brand-50 text-brand-600; }
+}
+
+.leaflet-container { font-family: inherit; }
