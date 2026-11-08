@@ -4,18 +4,19 @@ import { List, Map as MapIcon } from 'lucide-react'
 import Screen from '../components/Screen'
 import { DemoTag, StatusPill, Updated } from '../components/Badges'
 import { useStore } from '../lib/store'
-import { CHACLACAYO, formatDateTime, timeAgo } from '../lib/utils'
+import { formatDateTime, timeAgo } from '../lib/utils'
+import { posicionEnMapa } from '../lib/geo'
 
 type Layer = 'riesgo' | 'reportes' | 'recursos'
 
 export default function MapPage() {
-  const { riskAreas, reports, offers, lastUpdated } = useStore()
+  const { riskAreas, reports, offers, lastUpdated, center, zoneLabel, zone } = useStore()
   const [layers, setLayers] = useState<Record<Layer, boolean>>({ riesgo: true, reportes: true, recursos: true })
   const [list, setList] = useState(false)
 
   const toggle = (l: Layer) => setLayers((s) => ({ ...s, [l]: !s[l] }))
   // Los descartados no se muestran en el mapa público.
-  const visibleReports = reports.filter((r) => r.estado !== 'Descartado' && r.estado !== 'Resuelto')
+  const visibleReports = reports.filter((r) => r.estado !== 'Resuelto')
   const visibleOffers = offers.filter((o) => o.estado === 'Disponible')
 
   const toggles: { id: Layer; label: string; desc: string; color: string }[] = [
@@ -26,9 +27,9 @@ export default function MapPage() {
 
   return (
     <Screen
-      title="Mapa solidario" subtitle="Chaclacayo"
+      title="Mapa solidario" subtitle={zoneLabel}
       right={
-        <button onClick={() => setList(!list)} aria-label={list ? 'Ver mapa' : 'Ver lista'} className="flex h-11 w-11 items-center justify-center rounded-full hover:bg-white/10">
+        <button onClick={() => setList(!list)} aria-label={list ? 'Ver mapa' : 'Ver lista'} className="flex h-11 w-11 items-center justify-center rounded-lg border-[3px] border-ink bg-white text-ink shadow-brut-sm">
           {list ? <MapIcon /> : <List />}
         </button>
       }
@@ -51,8 +52,8 @@ export default function MapPage() {
       <div className="min-w-0">
       {!list ? (
         <>
-          <div className="h-[55vh] overflow-hidden rounded-2xl ring-1 ring-slate-300 lg:h-[68vh]">
-            <MapContainer center={CHACLACAYO} zoom={14} className="h-full w-full">
+          <div className="h-[55vh] overflow-hidden rounded-lg border-[3px] border-ink shadow-brut lg:h-[68vh]">
+            <MapContainer center={center} zoom={14} className="h-full w-full" key={center.join(',')}>
               <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               {layers.riesgo && riskAreas.map((a) => (
                 <Polygon key={a.id} positions={a.polygon} pathOptions={{ color: '#dc2626', fillOpacity: 0.25, dashArray: a.esOficial ? undefined : '6 6' }}>
@@ -64,26 +65,33 @@ export default function MapPage() {
                 </Polygon>
               ))}
               {layers.reportes && visibleReports.map((r) => {
-                const verified = r.estado === 'Verificado por coordinador' || r.estado === 'En atención'
+                const verified = r.estado === 'Verificado' || r.estado === 'En atención'
+                const pos = posicionEnMapa(r, zone.departamento)
+                if (!pos) return null
                 return (
-                  <CircleMarker key={r.id} center={[r.lat, r.lon]} radius={verified ? 11 : 9}
+                  <CircleMarker key={r.id} center={pos} radius={verified ? 11 : 9}
                     pathOptions={{ color: '#1d4ed8', fillColor: verified ? '#dc2626' : '#ffffff', fillOpacity: 0.9, weight: 3, dashArray: verified ? undefined : '3 3' }}>
                     <Popup>
                       <strong>{r.tipo}</strong> {r.demo && '(DEMO)'}<br />
                       {verified ? 'Verificado por coordinador' : 'Reporte ciudadano: pendiente de revisión'}<br />
+                      {r.distrito && <>{r.distrito}<br /></>}
                       {timeAgo(r.createdAt)}
                     </Popup>
                   </CircleMarker>
                 )
               })}
-              {layers.recursos && visibleOffers.map((o) => (
-                <CircleMarker key={o.id} center={[o.lat, o.lon]} radius={9} pathOptions={{ color: '#15803d', fillColor: '#22c55e', fillOpacity: 0.9 }}>
-                  <Popup>
-                    <strong>{o.categoria}</strong> {o.demo && '(DEMO)'}<br />
-                    {o.descripcion}<br />{o.disponibilidad}<br />Actualizado {formatDateTime(o.createdAt)}
-                  </Popup>
-                </CircleMarker>
-              ))}
+              {layers.recursos && visibleOffers.map((o) => {
+                const pos = posicionEnMapa(o, zone.departamento)
+                if (!pos) return null
+                return (
+                  <CircleMarker key={o.id} center={pos} radius={9} pathOptions={{ color: '#15803d', fillColor: '#22c55e', fillOpacity: 0.9 }}>
+                    <Popup>
+                      <strong>{o.categoria}</strong> {o.demo && '(DEMO)'}<br />
+                      {o.descripcion && <>{o.descripcion}<br /></>}{o.disponibilidad}<br />{o.distrito && <>{o.distrito}<br /></>}Actualizado {formatDateTime(o.createdAt)}
+                    </Popup>
+                  </CircleMarker>
+                )
+              })}
             </MapContainer>
           </div>
           <ul className="card mt-3 space-y-1 text-sm" aria-label="Leyenda">
@@ -101,12 +109,12 @@ export default function MapPage() {
           {layers.reportes && visibleReports.map((r) => (
             <li key={r.id} className="card">
               <p className="font-semibold">{r.tipo} {r.demo && <DemoTag />}</p>
-              <StatusPill label={r.estado === 'Verificado por coordinador' ? 'Verificado' : 'Pendiente de revisión'} tone={r.estado === 'Verificado por coordinador' ? 'green' : 'amber'} />
+              <StatusPill label={r.estado === 'Verificado' ? 'Verificado' : 'Pendiente de revisión'} tone={r.estado === 'Verificado' ? 'green' : 'amber'} />
               <p className="mt-1 text-sm text-slate-600">{timeAgo(r.createdAt)}</p>
             </li>
           ))}
           {layers.recursos && visibleOffers.map((o) => (
-            <li key={o.id} className="card"><p className="font-semibold">{o.categoria} {o.demo && <DemoTag />}</p><p className="text-sm">{o.descripcion}</p><p className="text-sm text-slate-600">{o.zona} · {o.disponibilidad}</p></li>
+            <li key={o.id} className="card"><p className="font-semibold">{o.categoria} {o.demo && <DemoTag />}</p><p className="text-sm">{o.descripcion}</p><p className="text-sm text-slate-600">{o.distrito} · {o.disponibilidad}</p></li>
           ))}
         </ul>
       )}

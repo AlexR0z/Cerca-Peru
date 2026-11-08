@@ -16,7 +16,7 @@ export default defineConfig({
         theme_color: '#a50f1c',
         background_color: '#ffffff',
         display: 'standalone',
-        start_url: '/',
+        start_url: './',
         icons: [
           { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
@@ -25,6 +25,12 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png}'],
         runtimeCaching: [
+          {
+            // Tipografías: se guardan para que la app se vea igual sin conexión
+            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/,
+            handler: 'StaleWhileRevalidate',
+            options: { cacheName: 'google-fonts', expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 } },
+          },
           {
             // Teselas del mapa: se guardan las ya vistas para consulta sin conexión
             urlPattern: /^https:\/\/[abc]\.tile\.openstreetmap\.org\/.*/,

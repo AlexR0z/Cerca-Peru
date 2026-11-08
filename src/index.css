@@ -5,20 +5,33 @@
 
 @layer base {
   html, body, #root { height: 100%; }
-  body { @apply bg-slate-100 text-slate-800 antialiased; }
-  :focus-visible { @apply outline outline-[3px] outline-offset-2 outline-blue-600; }
+  body {
+    @apply bg-crema font-sans text-ink antialiased;
+    background-image: radial-gradient(rgba(17, 17, 17, 0.14) 1.2px, transparent 1.2px);
+    background-size: 16px 16px;
+  }
+  h1, h2, h3 { @apply font-display; }
+  :focus-visible { @apply outline outline-4 outline-offset-2 outline-morado; }
 }
 
 @layer components {
-  .btn { @apply inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl px-4 text-base font-semibold transition active:scale-[0.98] disabled:opacity-50; }
-  .btn-primary { @apply btn bg-brand-600 text-white hover:bg-brand-700; }
-  .btn-outline { @apply btn border-2 border-brand-600 bg-white text-brand-600 hover:bg-brand-50; }
-  .btn-light { @apply btn bg-white text-brand-600 hover:bg-brand-50; }
-  .card { @apply rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200; }
-  .field { @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-3 text-base placeholder:text-slate-400; }
-  .label { @apply mb-1.5 block text-base font-semibold text-slate-900; }
-  .chip { @apply flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-xl border-2 border-slate-200 bg-white px-1 text-sm font-medium text-slate-700; }
-  .chip[aria-pressed='true'] { @apply border-brand-600 bg-brand-50 text-brand-600; }
+  .btn {
+    @apply inline-flex min-h-[52px] w-full items-center justify-center gap-2 rounded-lg border-[3px] border-ink px-4 text-base font-extrabold shadow-brut transition-all;
+    @apply hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brut-lg;
+    @apply active:translate-x-1 active:translate-y-1 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none;
+  }
+  .btn-primary { @apply btn bg-brand-600 text-white; }
+  .btn-outline { @apply btn bg-white text-ink; }
+  .btn-light { @apply btn bg-inti text-ink; }
+  .card { @apply rounded-lg border-[3px] border-ink bg-white p-4 shadow-brut; }
+  .field { @apply w-full rounded-lg border-[3px] border-ink bg-white px-3 py-3 text-base font-medium placeholder:text-slate-500 focus:shadow-brut-sm; }
+  .label { @apply mb-1.5 block text-base font-extrabold text-ink; }
+  .chip { @apply flex min-h-[64px] flex-col items-center justify-center gap-1 rounded-lg border-[3px] border-ink bg-white px-1 text-sm font-bold text-ink shadow-brut-sm transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none; }
+  .chip[aria-pressed='true'] { @apply translate-x-0.5 translate-y-0.5 bg-inti shadow-none; }
+  .tab { @apply min-h-[44px] flex-1 rounded-lg border-[3px] border-ink bg-white px-2 text-sm font-extrabold; }
+  .tab[aria-selected='true'] { @apply bg-inti shadow-brut-sm; }
 }
 
 .leaflet-container { font-family: inherit; }
+.leaflet-popup-content-wrapper { border: 3px solid #111; border-radius: 8px; box-shadow: 4px 4px 0 #111; }
+.leaflet-popup-tip { border: 0; }

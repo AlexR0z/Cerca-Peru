@@ -1,3 +1,6 @@
+-- OBSOLETO: este archivo es del esquema anterior de Cerca Perú y YA NO SE USA. No lo ejecutes.
+-- La app web usa la misma base de datos que la app móvil de Perú Vive (carpeta supabase/ de Perú Vive: 001, 002 y 003).
+
 -- DATOS FICTICIOS DE DEMOSTRACIÓN. No son información oficial.
 insert into public.risk_areas (nombre, tipo, geometry, fuente, fecha_fuente, es_oficial) values
 ('Quebrada de ejemplo (referencia orientativa)', 'Quebrada',

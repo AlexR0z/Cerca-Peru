@@ -1,13 +1,5 @@
 export const CHACLACAYO: [number, number] = [-11.9753, -76.7686]
 
-export const ZONES: { name: string; lat: number; lon: number }[] = [
-  { name: 'Av. Nicolás Ayllón', lat: -11.9789, lon: -76.7712 },
-  { name: 'Urb. Los Girasoles', lat: -11.9702, lon: -76.7605 },
-  { name: 'Parque Central', lat: -11.9741, lon: -76.7694 },
-  { name: 'Urb. Los Pinos', lat: -11.9668, lon: -76.7771 },
-  { name: 'Morón Bajo', lat: -11.9822, lon: -76.7589 },
-]
-
 /**
  * Reduce la precisión a 3 decimales (≈ 110 m) para no exponer la ubicación exacta.
  * Se aplica antes de guardar o mostrar cualquier coordenada pública.
@@ -46,6 +38,28 @@ export function distanceKm(a: [number, number], b: [number, number]): number {
     Math.sin(dLat / 2) ** 2 +
     Math.cos((a[0] * Math.PI) / 180) * Math.cos((b[0] * Math.PI) / 180) * Math.sin(dLon / 2) ** 2
   return 2 * R * Math.asin(Math.sqrt(x))
+}
+
+/** Reduce una foto (lado mayor `max` px) y la convierte en JPG: se sube rápido y ocupa poco. */
+export function reducirFoto(archivo: File, max = 1000): Promise<{ url: string; blob: Blob }> {
+  return new Promise((ok, fallo) => {
+    const url = URL.createObjectURL(archivo)
+    const img = new Image()
+    img.onload = () => {
+      const escala = Math.min(1, max / Math.max(img.width, img.height))
+      const c = document.createElement('canvas')
+      c.width = Math.round(img.width * escala)
+      c.height = Math.round(img.height * escala)
+      c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
+      URL.revokeObjectURL(url)
+      c.toBlob((blob) => {
+        if (!blob) return fallo(new Error('No pudimos procesar esa imagen. Prueba con otra.'))
+        ok({ url: URL.createObjectURL(blob), blob })
+      }, 'image/jpeg', 0.8)
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); fallo(new Error('No pudimos leer esa imagen. Prueba con otra.')) }
+    img.src = url
+  })
 }
 
 export const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']

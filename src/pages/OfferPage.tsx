@@ -5,23 +5,19 @@ import Screen from '../components/Screen'
 import { SyncBadge } from '../components/Badges'
 import { useStore } from '../lib/store'
 import { OFFER_CATEGORIES, type OfferCategory } from '../types'
-import { ZONES } from '../lib/utils'
 
 const WHEN = ['Hoy, desde 2:00 p. m.', 'Hoy, todo el día', 'Mañana por la mañana', 'Cualquier momento']
 
 export default function OfferPage() {
-  const { addOffer, offers, retireOffer } = useStore()
+  const { addOffer, offers, retireOffer, zoneLabel } = useStore()
   const [cat, setCat] = useState<OfferCategory>('Agua')
   const [desc, setDesc] = useState('')
   const [when, setWhen] = useState(WHEN[0])
-  const [zona, setZona] = useState(ZONES[0].name)
   const [doneId, setDoneId] = useState<string | null>(null)
-  const done = offers.find((o) => o.id === doneId)
+  const [msg, setMsg] = useState('')
+  const done = offers.find((o) => o.clientId === doneId)
 
-  const submit = () => {
-    const z = ZONES.find((x) => x.name === zona)!
-    setDoneId(addOffer({ categoria: cat, descripcion: desc.trim(), disponibilidad: when, zona, lat: z.lat, lon: z.lon }).id)
-  }
+  const submit = () => setDoneId(addOffer({ categoria: cat, descripcion: desc.trim(), disponibilidad: when }).clientId)
 
   if (done) {
     return (
@@ -32,7 +28,11 @@ export default function OfferPage() {
           <SyncBadge sync={done.sync} error={done.syncError} />
           <p className="text-sm text-slate-600">Estado: {done.estado}. Puedes retirarla cuando se agote.</p>
         </div>
-        <button className="btn-outline mt-4" onClick={() => { retireOffer(done.id); setDoneId(null); setDesc('') }}>Retirar mi oferta</button>
+        {msg && <p role="alert" className="mt-3 text-sm font-bold text-red-700">{msg}</p>}
+        <button className="btn-outline mt-4" onClick={async () => {
+          const r = await retireOffer(done.id)
+          if (r.ok) { setDoneId(null); setDesc(''); setMsg('') } else setMsg(r.message)
+        }}>Retirar mi oferta</button>
         <Link to="/inicio" className="btn-primary mt-3">Volver al inicio</Link>
       </Screen>
     )
@@ -49,17 +49,14 @@ export default function OfferPage() {
         </fieldset>
         <div>
           <label htmlFor="od" className="label">Detalles de tu ayuda</label>
-          <textarea id="od" rows={3} maxLength={200} className="field" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Ej.: Puedo donar 10 cajas de agua y víveres básicos" />
-          <p className="text-right text-xs text-slate-500">{desc.length}/200</p>
+          <textarea id="od" rows={3} maxLength={80} className="field" value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Ej.: Puedo donar 10 cajas de agua" />
+          <p className="text-right text-xs text-slate-500">{desc.length}/80</p>
         </div>
         <div>
           <label htmlFor="ow" className="label">Disponibilidad</label>
           <select id="ow" className="field" value={when} onChange={(e) => setWhen(e.target.value)}>{WHEN.map((w) => <option key={w}>{w}</option>)}</select>
         </div>
-        <div>
-          <label htmlFor="oz" className="label">Zona aproximada</label>
-          <select id="oz" className="field" value={zona} onChange={(e) => setZona(e.target.value)}>{ZONES.map((z) => <option key={z.name}>{z.name}</option>)}</select>
-        </div>
+        <p className="card text-sm">Zona aproximada: <strong>{zoneLabel}</strong> (la de tu perfil). Tu teléfono y tu dirección no se publican.</p>
         <button className="btn-primary" disabled={desc.trim().length < 5} onClick={submit}>Publicar ayuda</button>
       </div>
     </Screen>

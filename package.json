@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:web": "tsc -b && vite build --base ./ --outDir \"Nueva carpeta/Peru Vive _ VF/Peru Vive _ VF/web\" --emptyOutDir",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit"
   },

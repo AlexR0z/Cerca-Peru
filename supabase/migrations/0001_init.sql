@@ -1,3 +1,6 @@
+-- OBSOLETO: este archivo es del esquema anterior de Cerca Perú y YA NO SE USA. No lo ejecutes.
+-- La app web usa la misma base de datos que la app móvil de Perú Vive (carpeta supabase/ de Perú Vive: 001, 002 y 003).
+
 -- CERCA PERÚ · esquema inicial + RLS
 -- Revisar antes de producción. Ejecutar en el SQL Editor de Supabase o con `supabase db push`.
 

@@ -3,58 +3,74 @@ import { MapPin, Users } from 'lucide-react'
 import Screen from '../components/Screen'
 import { DemoTag, PriorityPill, StatusPill, SyncBadge } from '../components/Badges'
 import { useStore } from '../lib/store'
-import { CHACLACAYO, distanceKm, timeAgo } from '../lib/utils'
+import { distanceKm, timeAgo } from '../lib/utils'
+import type { HelpStatus } from '../types'
 
-type Filter = 'todas' | 'urgentes' | 'seguimiento'
+type Filter = 'todas' | 'nuevas' | 'seguimiento' | 'mias'
+
+const TONO: Record<HelpStatus, 'amber' | 'blue' | 'green' | 'slate'> = {
+  Activa: 'amber', 'En coordinación': 'blue', 'En atención': 'blue', Atendida: 'green', Cancelada: 'slate',
+}
 
 export default function NearbyPage() {
-  const { requests, acceptRequest, setRequestStatus, role } = useStore()
+  const { requests, acceptRequest, setRequestStatus, role, center } = useStore()
   const [filter, setFilter] = useState<Filter>('todas')
   const [msg, setMsg] = useState('')
+  const [bad, setBad] = useState(false)
+
+  const aviso = (r: { ok: boolean; message: string }) => { setMsg(r.message); setBad(!r.ok) }
+  const activas = (e: HelpStatus) => e !== 'Cancelada' && e !== 'Atendida'
 
   const list = requests
-    .filter((r) => r.estado !== 'Cancelada' && r.estado !== 'Atendida')
-    .filter((r) => (filter === 'urgentes' ? r.prioridad === 'Alta' : filter === 'seguimiento' ? r.estado !== 'Pendiente' : true))
-    .sort((a, b) => (a.prioridad === b.prioridad ? +new Date(a.createdAt) - +new Date(b.createdAt) : a.prioridad === 'Alta' ? -1 : 1))
+    .filter((r) => (filter === 'mias' ? !!r.mine : activas(r.estado)))
+    .filter((r) => (filter === 'nuevas' ? r.estado === 'Activa' : filter === 'seguimiento' ? r.estado !== 'Activa' : true))
+    .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
 
-  const tabs: [Filter, string][] = [['todas', 'Todas'], ['urgentes', 'Urgentes'], ['seguimiento', 'En seguimiento']]
+  const tabs: [Filter, string][] = [['todas', 'Todas'], ['nuevas', 'Nuevas'], ['seguimiento', 'En seguimiento'], ['mias', 'Mías']]
 
   return (
     <Screen title="Solicitudes cercanas">
-      <div role="tablist" className="mb-3 flex gap-2 lg:max-w-lg">
+      <div role="tablist" className="mb-3 flex flex-wrap gap-2 lg:max-w-xl">
         {tabs.map(([k, l]) => (
           <button key={k} role="tab" aria-selected={filter === k} onClick={() => setFilter(k)}
-            className={`min-h-[44px] flex-1 rounded-full text-sm font-semibold ${filter === k ? 'bg-brand-600 text-white' : 'bg-white text-slate-700 ring-1 ring-slate-300'}`}>{l}</button>
+            className="tab">{l}</button>
         ))}
       </div>
-      {msg && <p role="status" className="mb-3 rounded-xl bg-blue-50 p-3 text-sm text-blue-900">{msg}</p>}
+      {msg && <p role="status" className={`mb-3 rounded-lg border-[3px] border-ink p-3 text-sm font-bold text-ink shadow-brut-sm ${bad ? 'bg-[#ffd9dc]' : 'bg-turq'}`}>{msg}</p>}
       <ul className="grid gap-3 lg:grid-cols-2">
         {list.length === 0 && <li className="card text-center text-slate-600">No hay solicitudes en esta lista.</li>}
         {list.map((r) => {
-          const km = distanceKm(CHACLACAYO, [r.lat, r.lon])
+          const km = r.lat !== null && r.lon !== null ? distanceKm(center, [r.lat, r.lon]) : null
+          const puedeApoyar = !r.mine && activas(r.estado) && !r.yoApoyo
           return (
             <li key={r.id} className="card space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <PriorityPill p={r.prioridad} /> <StatusPill label={r.estado} tone={r.estado === 'Pendiente' ? 'amber' : 'blue'} />
+                {r.prioridad && <PriorityPill p={r.prioridad} />} <StatusPill label={r.estado} tone={TONO[r.estado]} />
+                {r.mine && <StatusPill label="Mía" tone="green" />}
                 {r.demo && <DemoTag />}
                 <span className="ml-auto text-xs text-slate-500">{timeAgo(r.createdAt)}</span>
               </div>
               <p className="text-lg font-bold">{r.categoria}</p>
-              <p>{r.descripcion}</p>
+              {r.descripcion && <p>{r.descripcion}</p>}
               <p className="flex items-center gap-3 text-sm text-slate-600">
-                <span className="inline-flex items-center gap-1"><MapPin size={14} />{r.zona} · {km.toFixed(1)} km del centro</span>
+                <span className="inline-flex items-center gap-1"><MapPin size={14} />{r.distrito || 'Zona sin indicar'}{km !== null ? ` · ${km.toFixed(1)} km de tu zona` : ''}</span>
                 <span className="inline-flex items-center gap-1"><Users size={14} />{r.personas}</span>
               </p>
+              {r.referencia && (r.mine || role === 'coordinador') && <p className="text-sm text-slate-600">Referencia: {r.referencia}</p>}
               {r.sync !== 'enviado' && <SyncBadge sync={r.sync} error={r.syncError} />}
-              {r.estado === 'Pendiente' && (
-                <button className="btn-primary" onClick={() => setMsg(acceptRequest(r.id).message)}>
+              {puedeApoyar && (
+                <button className="btn-primary" onClick={async () => aviso(await acceptRequest(r.id))}>
                   {role === 'ciudadano' ? 'Quiero ayudar' : 'Aceptar solicitud'}
                 </button>
               )}
-              {r.acceptedBy && (
+              {r.yoApoyo && <p className="text-sm font-bold text-green-800">Te comprometiste a apoyar esta solicitud.</p>}
+              {r.mine && r.estado === 'Activa' && r.sync === 'enviado' && (
+                <button className="min-h-[44px] rounded-lg border-[3px] border-ink bg-white px-3 font-extrabold text-ink shadow-brut-sm" onClick={async () => aviso(await setRequestStatus(r.id, 'Cancelada', 'Cancelada por quien la pidió'))}>Cancelar mi solicitud</button>
+              )}
+              {role === 'coordinador' && activas(r.estado) && r.sync === 'enviado' && (
                 <div className="flex items-center justify-between gap-2 text-sm">
-                  <span>Asignada a {r.acceptedBy}</span>
-                  <button className="min-h-[44px] rounded-lg px-3 font-semibold text-brand-600 ring-1 ring-brand-600" onClick={() => setRequestStatus(r.id, 'Atendida', 'Cerrada por voluntario')}>Marcar atendida</button>
+                  <span>Coordinación</span>
+                  <button className="min-h-[44px] rounded-lg border-[3px] border-ink bg-white px-3 font-extrabold text-ink shadow-brut-sm" onClick={async () => aviso(await setRequestStatus(r.id, 'Atendida', 'Cerrada por coordinación'))}>Marcar atendida</button>
                 </div>
               )}
             </li>

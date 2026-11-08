@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { CircleMarker, MapContainer, TileLayer, useMapEvents } from 'react-leaflet'
 import { Crosshair } from 'lucide-react'
-import { CHACLACAYO } from '../lib/utils'
+import { useStore } from '../lib/store'
 
 export interface Point { lat: number; lon: number }
 
@@ -16,6 +16,7 @@ function ClickToMark({ onPick }: { onPick: (p: Point) => void }) {
  */
 export default function LocationField({ value, onChange }: { value: Point | null; onChange: (p: Point) => void }) {
   const [msg, setMsg] = useState('')
+  const { center } = useStore() // el mapa parte en la zona de la persona
 
   const useMyLocation = () => {
     if (!navigator.geolocation) return setMsg('Tu dispositivo no permite ubicación. Toca el mapa para marcar el punto.')
@@ -23,7 +24,7 @@ export default function LocationField({ value, onChange }: { value: Point | null
     navigator.geolocation.getCurrentPosition(
       (pos) => { onChange({ lat: pos.coords.latitude, lon: pos.coords.longitude }); setMsg('Ubicación tomada. Se guardará de forma aproximada.') },
       () => setMsg('No pudimos usar tu ubicación. Toca el mapa para marcar el punto.'),
-      { enableHighAccuracy: true, timeout: 10000 },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 },
     )
   }
 
@@ -33,8 +34,8 @@ export default function LocationField({ value, onChange }: { value: Point | null
         <Crosshair size={20} /> Usar mi ubicación
       </button>
       <p className="text-sm text-slate-600">O toca el mapa para marcar el punto. Solo usamos una ubicación aproximada (unos 100 m).</p>
-      <div className="h-56 overflow-hidden rounded-xl ring-1 ring-slate-300">
-        <MapContainer center={value ? [value.lat, value.lon] : CHACLACAYO} zoom={14} className="h-full w-full" key={value ? 'p' : 'n'}>
+      <div className="h-56 overflow-hidden rounded-lg border-[3px] border-ink shadow-brut-sm">
+        <MapContainer center={value ? [value.lat, value.lon] : center} zoom={14} className="h-full w-full" key={value ? 'p' : 'n'}>
           <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <ClickToMark onPick={(p) => { onChange(p); setMsg('Punto marcado.') }} />
           {value && <CircleMarker center={[value.lat, value.lon]} radius={10} pathOptions={{ color: '#a50f1c', fillOpacity: 0.7 }} />}
