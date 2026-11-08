@@ -1,0 +1,200 @@
+/* Perú Vive · estilos compartidos (complementan a Tailwind CDN) */
+
+:root {
+    --rojo: #D91424;
+    --rojo-oscuro: #B5101C;
+    --dorado: #F6B90E;
+    --turquesa: #12A4A0;
+    --tinta: #0d1220;
+}
+
+@keyframes aparecer {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: aparecer .28s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+}
+
+/* ---------- Pantallas de acceso (01 a 10): estilo claro con campos tipo píldora ---------- */
+.auth {
+    min-height: 100%;
+    background: #fff;
+    color: var(--tinta);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.auth-in {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    padding: 28px 24px 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.auth h1 {
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    text-align: center;
+    margin: 16px 0 10px;
+}
+.auth-sub { text-align: center; color: #4b4f58; font-size: 1rem; line-height: 1.5; }
+.auth-onda {
+    position: absolute; left: 0; bottom: 0; width: 100%; height: 150px;
+    pointer-events: none; z-index: 0;
+}
+.auth-atras {
+    position: absolute; top: 14px; left: 12px; z-index: 2;
+    width: 44px; height: 44px; border-radius: 50%; border: 0; background: #f3f4f6;
+    display: grid; place-items: center; color: var(--tinta); cursor: pointer;
+}
+.auth-form { width: 100%; display: grid; gap: 14px; margin-top: 22px; }
+
+.campo-pill {
+    display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 10px 0 18px;
+    border: 2px solid #cfd3da; border-radius: 22px; background: #fff;
+}
+.campo-pill:focus-within { border-color: var(--rojo); box-shadow: 0 0 0 3px rgba(217, 20, 36, .15); }
+.campo-pill.mal { border-color: var(--rojo); }
+.campo-pill i.ico { width: 22px; color: #3a3f4a; text-align: center; flex: none; }
+.campo-pill input, .campo-pill select {
+    flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent;
+    color: var(--tinta); font-size: 1rem; padding: 0; font-family: inherit;
+}
+.campo-pill input::placeholder { color: #5b6170; }
+.campo-ojo {
+    flex: none; width: 44px; height: 44px; display: grid; place-items: center; border: 0;
+    background: none; border-radius: 50%; cursor: pointer; color: #3a3f4a;
+}
+.campo-error { display: block; margin: 5px 10px 0; color: var(--rojo); font-weight: 700; font-size: .82rem; }
+.campo-error:empty { display: none; }
+.aviso-global:not(:empty) {
+    padding: 11px 14px; border: 2px solid var(--rojo); border-radius: 16px; background: #fdecee;
+    text-align: center; font-size: .9rem;
+}
+.aviso-global.ok:not(:empty) { border-color: var(--turquesa); background: #e6f6f5; color: #0b5f5c; }
+
+.btn-pill {
+    display: flex; width: 100%; min-height: 54px; align-items: center; justify-content: center; gap: 8px;
+    border: 0; border-radius: 999px; background: var(--rojo); color: #fff; font-weight: 800;
+    font-size: 1.05rem; cursor: pointer; transition: transform .1s, background .15s; font-family: inherit;
+}
+.btn-pill:hover { background: var(--rojo-oscuro); }
+.btn-pill:active { transform: scale(.98); }
+.btn-pill:disabled { opacity: .65; cursor: progress; }
+.btn-pill.dorado { background: var(--dorado); color: #1c1210; }
+.btn-pill.dorado:hover { background: #e0a800; }
+.btn-pill.claro { background: #fff; color: var(--rojo); border: 2px solid var(--rojo); }
+.btn-pill.gris { background: #f1f2f4; color: #1f2937; }
+
+.link-sutil {
+    background: none; border: 0; color: #4b5563; font-size: .95rem; text-decoration: none;
+    padding: 8px 6px; cursor: pointer; font-family: inherit;
+}
+.link-sutil:hover { color: var(--rojo); text-decoration: underline; }
+
+.otp { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 9px; width: 100%; margin-top: 28px; }
+.otp input {
+    width: 100%; aspect-ratio: 11 / 14; text-align: center; font-size: 1.7rem; font-weight: 800;
+    border: 2px solid #a9abb1; border-radius: 14px; outline: 0; background: #fff; font-family: inherit;
+}
+.otp input:focus { border-color: var(--rojo); box-shadow: 0 0 0 3px rgba(217, 20, 36, .15); }
+.otp.mal input { border-color: var(--rojo); }
+
+/* ---------- Componentes del panel ---------- */
+.tarjeta { background: #fff; border: 1px solid #e2e8f0; border-radius: 1rem; box-shadow: 0 1px 2px rgba(15, 23, 42, .06); }
+.chip-estado { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+
+/* Interruptor (toggle) accesible */
+.interruptor { position: relative; width: 48px; height: 28px; flex: none; }
+.interruptor input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; z-index: 1; }
+.interruptor span { position: absolute; inset: 0; border-radius: 999px; background: #cbd5e1; transition: background .2s; }
+.interruptor span::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px;
+    border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); transition: transform .2s;
+}
+.interruptor input:checked + span { background: var(--rojo); }
+.interruptor input:checked + span::after { transform: translateX(20px); }
+.interruptor input:focus-visible + span { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+
+/* Línea de tiempo del seguimiento (pantalla 24) */
+.linea { list-style: none; margin: 0; padding: 0 0 0 4px; }
+.linea li { position: relative; padding: 0 0 22px 34px; color: #94a3b8; }
+.linea li::before {
+    content: ""; position: absolute; left: 11px; top: 24px; bottom: -2px; width: 3px; background: #e2e8f0;
+}
+.linea li:last-child::before { display: none; }
+.linea li .punto {
+    position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 11px; background: #fff; border: 3px solid #cbd5e1; color: #fff;
+}
+.linea li.hecho { color: #0f172a; }
+.linea li.hecho::before { background: var(--turquesa); }
+.linea li.hecho .punto { background: var(--turquesa); border-color: var(--turquesa); }
+.linea li.actual .punto { background: var(--rojo); border-color: var(--rojo); box-shadow: 0 0 0 5px rgba(217, 20, 36, .18); }
+
+/* Gráficos de la pantalla 34 */
+.dona {
+    --p: 85; width: 128px; height: 128px; border-radius: 50%; display: grid; place-items: center; flex: none;
+    background: conic-gradient(var(--turquesa) calc(var(--p) * 1%), #e5e7eb 0);
+}
+.dona::before { content: ""; position: absolute; width: 92px; height: 92px; border-radius: 50%; background: #fff; }
+.dona b { position: relative; font-size: 1.5rem; font-weight: 800; color: #0f172a; }
+.barra-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.barra-col .barra { width: 70%; border-radius: 8px 8px 0 0; background: var(--rojo); min-height: 6px; transition: height .5s; }
+
+/* Pantalla de presentación: la ilustración ocupa todo el alto */
+.presentacion { height: 100%; width: 100%; display: block; background: #c8001f center / cover no-repeat; cursor: pointer; border: 0; padding: 0; }
+
+/* ---------- Modo incrustado (tablero de pantallas) ---------- */
+body.embed { display: block !important; background: #fff !important; min-height: 0 !important; }
+body.embed #app-container {
+    max-width: none !important; width: 100% !important; height: 100vh !important;
+    border-radius: 0 !important; border: 0 !important; box-shadow: none !important;
+}
+
+/* ---------- Diseño accesible y amigable (inicio, hojas de información, comunidad) ---------- */
+:root { --pv-rojo: #C8102E; --pv-rojo-oscuro: #A80F1D; --pv-tinta: #1A1A1A; }
+
+.pv-tarjeta { transition: transform .15s; font-family: inherit; cursor: pointer; }
+.pv-tarjeta:active { transform: scale(.97); }
+.pv-sos { animation: pv-pulso 1.8s ease-in-out infinite; }
+@keyframes pv-pulso {
+    0% { box-shadow: 0 0 0 0 rgba(200, 16, 46, .55); }
+    70% { box-shadow: 0 0 0 18px rgba(200, 16, 46, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(200, 16, 46, 0); }
+}
+@media (prefers-reduced-motion: reduce) { .pv-sos { animation: none; } }
+button:focus-visible, a:focus-visible, select:focus-visible, textarea:focus-visible { outline: 4px solid var(--pv-tinta); outline-offset: 3px; }
+
+/* Hoja inferior con "de qué trata" y "beneficios" */
+.pv-hoja-fondo { position: absolute; inset: 0; z-index: 60; display: flex; align-items: flex-end; background: rgba(0, 0, 0, .5); }
+.pv-hoja {
+    width: 100%; max-height: 90%; overflow-y: auto; background: #fff; padding: 20px 20px 24px;
+    border: 3px solid var(--pv-tinta); border-bottom: 0; border-radius: 24px 24px 0 0;
+    animation: pv-sube .25s ease-out both;
+}
+@keyframes pv-sube { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Comentarios de la comunidad */
+.pv-comentario { background: #F6F4EE; border-radius: 14px; padding: 8px 12px; }
+
+/* Fecha de nacimiento con tres listas (día, mes y año) */
+.fecha-trio { display: grid; grid-template-columns: 1fr 1.7fr 1.3fr; gap: 8px; }
+.fecha-trio .campo-pill { gap: 0; }
+.fecha-trio.mal .campo-pill { border-color: var(--rojo); }
+
+/* Tutorial inicial: el contenido se desplaza y los botones quedan siempre visibles abajo */
+.auth.tutorial { overflow: visible; }                 /* con overflow:hidden el pie fijo no funciona */
+.tutorial-contenido { flex: 1; padding-bottom: 12px; }
+.tutorial-pie {
+    position: sticky; bottom: 0; z-index: 3; background: #fff; border-top: 1px solid #e5e7eb;
+    padding: 12px 24px 10px; display: grid; gap: 4px;
+}

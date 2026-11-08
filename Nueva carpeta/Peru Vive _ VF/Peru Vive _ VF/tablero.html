@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perú Vive · Tablero de pantallas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --rojo: #D91424; --rojo2: #B5101C; --crema: #fff8ee; --tinta: #1c1210; }
+        * { box-sizing: border-box; margin: 0; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--crema); color: var(--tinta); line-height: 1.4; }
+        button { font: inherit; cursor: pointer; }
+        :focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+
+        /* ---------- Cabecera ---------- */
+        .cabecera { background: linear-gradient(135deg, #e11d48, var(--rojo2)); color: #fff; padding: 22px 28px 18px; }
+        .cabecera-in { max-width: 1500px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 18px; align-items: center; justify-content: space-between; }
+        .marca { display: flex; align-items: center; gap: 16px; }
+        .marca img { height: 46px; background: #fff; padding: 6px 12px; border-radius: 14px; }
+        .marca h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; }
+        .marca p { font-size: .85rem; opacity: .9; }
+        .acciones { display: flex; flex-wrap: wrap; gap: 10px; }
+        .btn { border: 0; border-radius: 999px; padding: 11px 20px; font-weight: 800; font-size: .9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-claro { background: #fff; color: var(--rojo); }
+        .btn-oro { background: #F6B90E; color: var(--tinta); }
+        .btn-borde { background: transparent; color: #fff; border: 2px solid rgba(255, 255, 255, .7); }
+        .btn:hover { filter: brightness(.95); }
+
+        /* ---------- Selector: app móvil / app web ---------- */
+        .selector-fila { margin-top: 16px; }
+        .selector { display: inline-flex; background: rgba(0, 0, 0, .22); border-radius: 999px; padding: 4px; gap: 4px; }
+        .selector button { border: 0; border-radius: 999px; background: transparent; color: #fff; font-weight: 800; font-size: .95rem; padding: 10px 20px; display: inline-flex; align-items: center; gap: 8px; }
+        .selector button small { font-weight: 500; opacity: .85; font-size: .72rem; }
+        .selector button[aria-pressed="true"] { background: #fff; color: var(--rojo); }
+        .selector button[aria-pressed="true"] small { opacity: .75; }
+        .selector.chico button { font-size: .82rem; padding: 7px 16px; }
+        .aviso-web { background: #fff3d1; color: var(--tinta); border: 2px solid var(--tinta); border-radius: 12px; padding: 8px 14px; font-size: .85rem; }
+        .aviso-web[hidden], .selector[hidden] { display: none; }
+
+        /* ---------- Navegación de secciones ---------- */
+        .indice { position: sticky; top: 0; z-index: 20; background: rgba(255, 248, 238, .94); backdrop-filter: blur(6px); border-bottom: 1px solid #f0e3d0; }
+        .indice-in { max-width: 1500px; margin: 0 auto; padding: 10px 28px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        .indice a { text-decoration: none; color: var(--tinta); font-weight: 700; font-size: .82rem; padding: 6px 14px; border-radius: 999px; background: #fff; border: 2px solid transparent; display: inline-flex; gap: 8px; align-items: center; }
+        .indice a b { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: .75rem; }
+        .indice a:hover { border-color: var(--rojo); }
+        .indice .ayuda { margin-left: auto; font-size: .78rem; color: #6b5d55; font-weight: 500; }
+
+        main { max-width: 1500px; margin: 0 auto; padding: 8px 28px 60px; }
+
+        /* ---------- Secciones ---------- */
+        .seccion { margin-top: 34px; scroll-margin-top: 70px; }
+        .seccion-cab { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 18px; }
+        .insignia { display: inline-flex; align-items: center; gap: 10px; padding: 8px 20px 8px 8px; border-radius: 999px; color: #fff; font-weight: 800; font-size: 1.1rem; }
+        .insignia i { font-style: normal; width: 32px; height: 32px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-size: 1rem; }
+        .seccion-cab p { color: #5b4d45; font-size: .95rem; }
+        .rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(206px, 1fr)); gap: 26px 18px; justify-items: center; }
+
+        /* ---------- Teléfono en miniatura ---------- */
+        .ficha { width: 206px; text-align: center; }
+        .tel {
+            position: relative; width: 206px; height: 410px; overflow: hidden; padding: 0; display: block;
+            border: 5px solid #111827; border-radius: 28px; background: #fff;
+            box-shadow: 0 10px 24px rgba(60, 20, 20, .18); transition: transform .15s, box-shadow .15s;
+        }
+        .tel:hover { transform: translateY(-4px); box-shadow: 0 16px 30px rgba(60, 20, 20, .26); }
+        /* El cuadro mide 206×410 con borde de 5 px → área interior 196×400.
+           Se pinta el teléfono a 390 px de ancho y se escala a 196/390 = .5026 para llenar el ancho exacto
+           (sin sobrantes a los lados); el alto 796 px × .5026 = 400 px llena el cuadro por completo. */
+        .tel iframe { position: absolute; left: 0; top: 0; width: 390px; height: 796px; border: 0; transform: scale(.5026); transform-origin: top left; pointer-events: none; background: #fff; }
+        .tel::after { content: ""; position: absolute; inset: 0; }
+        /* App web en escritorio: pantalla de 1280×800 reducida a 356 px de ancho (356/1280 = .278125) */
+        .rejilla-web { grid-template-columns: repeat(auto-fill, minmax(366px, 1fr)); }
+        .ficha-web { width: 366px; }
+        .telweb { width: 366px; height: 232px; border-radius: 16px; }
+        .telweb iframe { width: 1280px; height: 800px; transform: scale(.278125); }
+        .ficha p { margin-top: 10px; font-size: .86rem; font-weight: 700; color: #3a2d28; }
+        .ficha p span { color: var(--rojo); }
+
+        /* ---------- Flujo general ---------- */
+        .flujo { margin-top: 44px; background: #fff3d1; border-radius: 28px; padding: 22px 28px; }
+        .flujo h2 { display: inline-block; background: #F6B90E; padding: 6px 20px; border-radius: 999px; font-size: 1.05rem; margin-bottom: 16px; }
+        .pasos { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+        .paso { display: flex; align-items: center; gap: 12px; background: #fff; padding: 12px 18px; border-radius: 18px; font-weight: 700; font-size: .92rem; box-shadow: 0 2px 6px rgba(0, 0, 0, .06); }
+        .paso span { width: 38px; height: 38px; border-radius: 50%; background: var(--rojo); color: #fff; display: grid; place-items: center; font-size: 1.1rem; }
+        .flecha { color: var(--rojo); font-size: 1.6rem; font-weight: 800; }
+
+        /* ---------- Visor en grande ---------- */
+        #visor { position: fixed; inset: 0; z-index: 100; background: rgba(20, 8, 8, .92); display: none; align-items: center; justify-content: center; gap: 26px; padding: 16px; }
+        #visor.abierto { display: flex; }
+        .v-marco { flex: none; position: relative; border: 8px solid #111827; border-radius: 40px; background: #fff; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); }
+        .v-marco iframe { position: absolute; left: 0; top: 0; width: 390px; height: 844px; border: 0; transform-origin: top left; background: #fff; }
+        .v-marco.escritorio { border-radius: 18px; border-width: 8px; }
+        .v-nav { width: 56px; height: 56px; border-radius: 50%; border: 0; background: #fff; color: var(--rojo); font-size: 1.6rem; font-weight: 800; flex: none; }
+        .v-nav:hover { background: #F6B90E; color: var(--tinta); }
+        .v-info { width: 300px; color: #fff; flex: none; }
+        .v-info .etiqueta { display: inline-block; padding: 4px 14px; border-radius: 999px; font-weight: 800; font-size: .8rem; color: #fff; }
+        .v-info h2 { font-size: 1.6rem; font-weight: 800; margin: 12px 0 6px; line-height: 1.15; }
+        .v-info .contador { font-size: .85rem; opacity: .75; }
+        .v-info .nota { margin-top: 14px; background: rgba(255, 255, 255, .1); border-left: 4px solid #F6B90E; border-radius: 10px; padding: 12px 14px; font-size: .92rem; line-height: 1.5; }
+        .v-info .nota b { display: block; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: #F6B90E; margin-bottom: 4px; }
+        .barra { height: 6px; background: rgba(255, 255, 255, .2); border-radius: 99px; margin: 16px 0; overflow: hidden; }
+        .barra div { height: 100%; background: #F6B90E; transition: width .3s; }
+        .v-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+        .v-botones .btn { padding: 9px 16px; font-size: .82rem; }
+        .v-cerrar { position: absolute; top: 14px; right: 18px; width: 46px; height: 46px; border-radius: 50%; border: 0; background: #fff; color: var(--tinta); font-size: 1.3rem; font-weight: 800; }
+        .v-atajos { margin-top: 14px; font-size: .74rem; opacity: .65; line-height: 1.6; }
+        kbd { background: rgba(255, 255, 255, .18); padding: 1px 7px; border-radius: 6px; font-family: inherit; font-weight: 700; }
+
+        @media (max-width: 900px) {
+            #visor.abierto { flex-direction: column; overflow-y: auto; justify-content: flex-start; padding-top: 70px; }
+            .v-info { width: 100%; max-width: 420px; }
+            .v-nav { position: fixed; bottom: 14px; z-index: 5; }
+            #v-prev { left: 14px; } #v-sig { right: 14px; }
+            .cabecera { padding: 18px; } main, .indice-in { padding-left: 16px; padding-right: 16px; }
+        }
+        @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+    </style>
+</head>
+<body>
+
+<header class="cabecera">
+    <div class="cabecera-in">
+        <div class="marca">
+            <img src="img/logo-horizontal.webp" alt="Perú Vive">
+            <div>
+                <h1>Tablero de pantallas</h1>
+                <p id="subtitulo-tablero">Pantallas del prototipo, funcionando de punta a punta · Comunidad, prevención y apoyo ante emergencias</p>
+            </div>
+        </div>
+        <div class="acciones">
+            <button class="btn btn-oro" id="b-presentar">▶ Presentar desde la pantalla 01</button>
+            <a class="btn btn-claro" id="b-abrir" href="index.html">Abrir la app completa</a>
+            <button class="btn btn-borde" id="b-reiniciar">Reiniciar datos de demostración</button>
+        </div>
+    </div>
+    <div class="cabecera-in selector-fila">
+        <div class="selector" role="group" aria-label="Elegir la aplicación">
+            <button type="button" id="m-movil" aria-pressed="true"><span aria-hidden="true">📱</span> App móvil <small>Android · Perú Vive</small></button>
+            <button type="button" id="m-web" aria-pressed="false"><span aria-hidden="true">💻</span> App web <small>React · Cerca Perú</small></button>
+        </div>
+        <div class="selector chico" id="selector-disp" role="group" aria-label="Ver la app web en" hidden>
+            <button type="button" id="d-escritorio" aria-pressed="true">Escritorio</button>
+            <button type="button" id="d-celular" aria-pressed="false">Celular</button>
+        </div>
+        <p class="aviso-web" id="aviso-web" role="note" hidden>No se encontró la app web compilada. En la carpeta del proyecto React ejecuta <code>npm run build:web</code> y recarga esta página.</p>
+    </div>
+</header>
+
+<nav class="indice" aria-label="Secciones">
+    <div class="indice-in" id="indice"></div>
+</nav>
+
+<main id="contenido"></main>
+
+<section class="flujo" aria-label="Flujo general del usuario" style="max-width:1444px;margin:0 auto 60px">
+    <h2>Flujo general del usuario</h2>
+    <div class="pasos">
+        <div class="paso"><span>📱</span> Comenzar</div><div class="flecha" aria-hidden="true">→</div>
+        <div class="paso"><span>👤</span> Crear cuenta o iniciar sesión</div><div class="flecha" aria-hidden="true">→</div>
+        <div class="paso"><span>📍</span> Completar perfil y ubicación</div><div class="flecha" aria-hidden="true">→</div>
+        <div class="paso"><span>🧭</span> Conocer la app con la guía</div><div class="flecha" aria-hidden="true">→</div>
+        <div class="paso"><span>🏠</span> Usar las funciones principales</div>
+    </div>
+</section>
+
+<!-- Visor de una pantalla en tamaño real -->
+<div id="visor" role="dialog" aria-modal="true" aria-label="Visor de pantalla">
+    <button class="v-cerrar" id="v-cerrar" aria-label="Cerrar visor">✕</button>
+    <button class="v-nav" id="v-prev" aria-label="Pantalla anterior">‹</button>
+    <div class="v-marco" id="v-marco"><iframe id="v-iframe" title="Pantalla de la aplicación"></iframe></div>
+    <button class="v-nav" id="v-sig" aria-label="Pantalla siguiente">›</button>
+    <aside class="v-info">
+        <span class="etiqueta" id="v-seccion"></span>
+        <h2 id="v-titulo"></h2>
+        <div class="contador" id="v-contador"></div>
+        <div class="barra"><div id="v-progreso"></div></div>
+        <div class="nota"><b>Qué mostrar</b><span id="v-nota"></span></div>
+        <div class="v-botones" style="margin-top:16px">
+            <button class="btn btn-oro" id="v-auto">▶ Recorrido automático</button>
+            <button class="btn btn-claro" id="v-recargar">↺ Reiniciar pantalla</button>
+        </div>
+        <p class="v-atajos"><kbd>←</kbd> <kbd>→</kbd> cambiar de pantalla · <kbd>Espacio</kbd> recorrido automático · <kbd>Esc</kbd> cerrar</p>
+    </aside>
+</div>
+
+<script>
+/* ===== Secciones y pantallas del boceto (39) ===== */
+const SECCIONES = [
+    { id: 1, titulo: 'Inicio y Acceso', sub: 'Primer contacto y autenticación del usuario.', color: '#F26B21' },
+    { id: 2, titulo: 'Panel del Ciudadano', sub: 'Funciones principales para reportar, solicitar y ofrecer ayuda.', color: '#E0A400' },
+    { id: 3, titulo: 'Comunidad y Seguimiento', sub: 'Participación, coordinación y seguimiento de solicitudes.', color: '#12A4A0' },
+    { id: 4, titulo: 'Centro de Coordinación', sub: 'Gestión y monitoreo (autoridades y organizaciones).', color: '#7c3aed' },
+    { id: 5, titulo: 'Perfil y Configuración', sub: 'Gestión de la cuenta y preferencias.', color: '#E0267A' }
+];
+
+const PANTALLAS = [
+    // 1. Inicio y Acceso
+    { s: 1, t: 'Presentación', r: 'splash', nota: 'Pantalla de bienvenida con la identidad de Perú Vive. Se avanza tocando la imagen.' },
+    { s: 1, t: 'Acceso', r: 'acceso', nota: 'Dos caminos claros: iniciar sesión o crear cuenta.' },
+    { s: 1, t: 'Iniciar sesión', r: 'login', nota: 'Valida correo o celular, muestra errores comprensibles y permite ver la contraseña. En la demo cualquier contraseña funciona.' },
+    { s: 1, t: 'Crear cuenta', r: 'registro', nota: 'Formulario corto con validación en pantalla. El correo es opcional; el celular exige 9 dígitos.' },
+    { s: 1, t: 'Verificación', r: 'verificar', nota: 'Código de 6 dígitos con avance automático y pegado. En la demo no se envía ningún SMS real.' },
+    { s: 1, t: 'Recuperar contraseña', r: 'recuperar', nota: 'Se pide correo o celular para enviar un código de recuperación (simulado).' },
+    { s: 1, t: 'Nueva contraseña', r: 'nueva-clave', nota: 'Mínimo 8 caracteres y confirmación. Las contraseñas nunca se guardan.' },
+    { s: 1, t: 'Completar perfil', r: 'completar-perfil', nota: 'Foto opcional (se reduce a 256 px), nombre visible y fecha de nacimiento con listas de día, mes y año (sin calendario del navegador). Se valida que la fecha exista y no sea futura.' },
+    { s: 1, t: 'Seleccionar ubicación', r: 'ubicacion', nota: 'Los 25 departamentos, 196 provincias y 1 874 distritos del Perú (INEI), dependientes entre sí. "Usar mi ubicación actual" sugiere el distrito más cercano con el GPS, solo con permiso, y guarda una ubicación aproximada.' },
+    { s: 1, t: 'Tutorial inicial', r: 'tutorial', nota: 'Tres pasos cortos que explican qué puede hacer la persona. Se puede omitir.' },
+    { s: 1, t: 'Guía de primer uso: bienvenida', r: 'guia?paso=0', nota: 'La primera vez que se entra al Inicio se abre una guía de 15 pasos sobre la app real. Cada paso resalta una parte con un recuadro amarillo y la explica. Se puede omitir y repetir desde Perfil.' },
+    { s: 1, t: 'Guía: botón de emergencia', r: 'guia?paso=3', nota: 'Explica cómo reportar una emergencia y recuerda llamar primero a Policía (105), Bomberos (116) o SAMU (106) si hay peligro inmediato.' },
+    { s: 1, t: 'Guía: accesos principales', r: 'guia?paso=4', nota: 'Pedir ayuda, dar ayuda, ver el mapa y entrar a la comunidad: lo que se puede hacer desde el Inicio.' },
+    { s: 1, t: 'Guía: comunidad', r: 'guia?paso=12', nota: 'Muestra cómo publicar con foto, comentar, dar me gusta y borrar lo propio. En este tablero se avanza con Siguiente dentro del visor.' },
+    // 2. Panel del Ciudadano
+    { s: 2, t: 'Inicio (Panel principal)', r: 'inicio', nota: 'Diseño accesible de letra grande: zona con botón Cambiar, puntos (al tocarlos explican de qué tratan), botón de emergencia, cuatro accesos, "Más opciones" con sus beneficios y alertas cercanas.' },
+    { s: 2, t: 'Mapa solidario', r: 'mapa', nota: 'Mapa con filtros por tipo. Al tocar un pin se abre el detalle del punto con su estado.' },
+    { s: 2, t: 'Detalle del punto', r: 'reportar', nota: 'Alertas recientes de la zona y punto de partida del reporte. Un reporte nuevo queda como pendiente hasta que coordinación lo revise.' },
+    { s: 2, t: 'Reportar emergencia', r: 'reportar-tipo', nota: 'Se elige el tipo de emergencia: sismo, huayco, inundación o incendio.' },
+    { s: 2, t: 'Describir la emergencia', r: 'reportar-descripcion', nota: 'Descripción breve y foto opcional.' },
+    { s: 2, t: 'Confirmar ubicación', r: 'reportar-ubicacion', nota: 'Parte con la zona del perfil. "Usar mi ubicación actual" detecta el distrito donde se está y guarda un punto aproximado para el mapa.' },
+    { s: 2, t: 'Confirmación del reporte', r: 'reportar-confirmacion', nota: 'Código de seguimiento y estado. Recuerda llamar a los servicios oficiales si hay peligro inmediato.' },
+    { s: 2, t: 'Solicitar ayuda', r: 'ayuda', nota: 'Tipo de ayuda (alimentos, agua, medicinas, transporte, refugio) y número de personas.' },
+    { s: 2, t: 'Detalle de la solicitud', r: 'ayuda-detalle', nota: 'Resumen antes de enviar. Al enviar se guarda y aparece en el historial.' },
+    { s: 2, t: 'Ofrecer ayuda', r: 'ofrecer', nota: 'La persona elige qué puede brindar: alimentos, agua, transporte o voluntariado.' },
+    { s: 2, t: 'Registrar disponibilidad', r: 'ofrecer-disponibilidad', nota: 'Cuándo está disponible y cómo contactarla. Publica la oferta.' },
+    // 3. Comunidad y Seguimiento
+    { s: 3, t: 'Solicitudes cercanas', r: 'solicitudes', nota: 'Solicitudes de la zona ordenadas por cercanía, con filtros. No muestra nombres ni teléfonos.' },
+    { s: 3, t: 'Detalle de solicitud', r: 'solicitud-detalle?id=ZS-001', nota: 'Toda la información útil para decidir y el botón “Apoyar”. Los datos de contacto los maneja coordinación.' },
+    { s: 3, t: 'Seguimiento de solicitud', r: 'seguimiento?id=SOL-001', nota: 'Línea de tiempo con las etapas. El botón de simulación avanza el estado para la demostración.' },
+    { s: 3, t: 'Historial de solicitudes', r: 'historial', nota: 'Todo lo que la persona pidió, reportó u ofreció, en dos pestañas.' },
+    { s: 3, t: 'Comunidad y voluntarios', r: 'comunidad', nota: 'Directorio de voluntarios que aceptaron aparecer y publicaciones de la comunidad, con opción de reportar abuso.' },
+    { s: 3, t: 'Publicaciones y comentarios', r: 'comunidad?id=PUB-002', nota: 'Se publica con foto, se da me gusta y se comenta. La autora o el autor recibe un aviso con cada me gusta o comentario.' },
+    { s: 3, t: 'Borrar una publicación', r: 'comunidad?id=PUB-002&confirmar=1', nota: 'Cada persona puede borrar sus propias publicaciones y comentarios, siempre con una pregunta de confirmación. Coordinación puede moderar.' },
+    { s: 3, t: 'Perfil de voluntario', r: 'voluntario?id=VOL-001', nota: 'Habilidades, horario y valoración vecinal. El contacto es dentro de la app, sin exponer teléfono.' },
+    { s: 3, t: 'Notificaciones', r: 'notificaciones', nota: 'Avisos sobre solicitudes y reportes, y cuando alguien da me gusta o comenta una publicación. Lo no leído se resalta y se puede marcar todo como leído.' },
+    { s: 3, t: 'Aviso: un vecino pidió tu ayuda', r: 'contacto', nota: 'Lo que ve el voluntario al abrir el aviso: nombre y zona de quien lo contactó, con botones para escribirle por WhatsApp o llamarle. El número de ejemplo es ficticio.' },
+    { s: 3, t: 'Mis ayudas', r: 'mis-ayudas', nota: 'Las ofertas de la persona: puede pausarlas, reactivarlas o retirarlas.' },
+    { s: 3, t: 'Centro de ayuda', r: 'centro-ayuda', nota: 'Preguntas frecuentes, guías de uso y números oficiales de emergencia.' },
+    { s: 3, t: 'Mis recompensas', r: 'recompensas', nota: 'Puntos solidarios, insignia actual, barra de hitos (50 a 400) y las 6 insignias. La pestaña Beneficios describe lo que trae cada una.' },
+    { s: 3, t: 'Asistente virtual', r: 'asistente', nota: 'Chatbot básico: responde con palabras clave sobre emergencias, ayuda, puntos e insignias, y ofrece botones para ir a cada pantalla.' },
+    // 4. Centro de Coordinación
+    { s: 4, t: 'Panel de coordinación', r: 'coordinacion', nota: 'Solo para coordinación: emergencias, solicitudes y voluntarios de un vistazo.' },
+    { s: 4, t: 'Zonas seguras (coordinación)', r: 'zonas-seguras', nota: 'Coordinación agrega refugios, centros de acopio, puntos de reunión y atención de salud, cambia su estado (Activo, Lleno, Cerrado) o los borra. Se ven en el mapa solidario.' },
+    { s: 4, t: 'Gestión de emergencias', r: 'emergencias', nota: 'Se revisa cada reporte y se cambia su estado; queda registrado quién lo revisó.' },
+    { s: 4, t: 'Asignación de voluntarios', r: 'asignar', nota: 'Se eligen voluntarios disponibles para un caso. Evita asignar dos veces a la misma persona.' },
+    { s: 4, t: 'Estadísticas e indicadores', r: 'estadisticas', nota: 'Porcentaje de emergencias atendidas, tipos más frecuentes y estado de las solicitudes.' },
+    // 5. Perfil y Configuración
+    { s: 5, t: 'Perfil', r: 'perfil', nota: 'Datos de la persona, puntos solidarios y acceso a todas sus opciones. Incluye "Cambiar mi ubicación" y "Ver la guía de la app".' },
+    { s: 5, t: 'Cambiar mi ubicación', r: 'ubicacion?volver=perfil', nota: 'Se puede elegir otra zona en las listas o detectarla con el GPS cuando la persona viaja. Al guardar vuelve a la pantalla de origen.' },
+    { s: 5, t: 'Editar perfil', r: 'editar-perfil', nota: 'Nombre visible, nombres, apellidos y correo, con validación.' },
+    { s: 5, t: 'Configuración', r: 'configuracion', nota: 'Notificaciones, privacidad (ubicación aproximada) e idioma. Incluye herramientas solo para la demostración.' },
+    { s: 5, t: 'Seguridad', r: 'seguridad', nota: 'Cambio de contraseña y verificación en 2 pasos (simulada).' },
+    { s: 5, t: 'Cerrar sesión', r: 'cerrar-sesion', nota: 'Pide confirmación antes de salir y devuelve a la pantalla de acceso.' }
+];
+
+/* ===== App web (React · Cerca Perú): comparte cuentas y datos con la app móvil ===== */
+const SECCIONES_WEB = [
+    { id: 1, titulo: 'Bienvenida y Acceso', sub: 'Entrar con la misma cuenta de la app móvil.', color: '#F26B21' },
+    { id: 2, titulo: 'Panel del Ciudadano', sub: 'Reportar, pedir y ofrecer ayuda, y ver el mapa.', color: '#E0A400' },
+    { id: 3, titulo: 'Comunidad y Avisos', sub: 'Voluntarios, publicaciones, comentarios y avisos.', color: '#12A4A0' },
+    { id: 4, titulo: 'Centro de Coordinación', sub: 'Gestión de reportes y solicitudes (solo coordinación).', color: '#7c3aed' },
+    { id: 5, titulo: 'Perfil', sub: 'Datos, ubicación, voluntariado y cuenta.', color: '#E0267A' }
+];
+
+const PANTALLAS_WEB = [
+    { s: 1, t: 'Bienvenida', r: '', nota: 'Portada con el lema de la app. Desde aquí se entra a la app o se ve el tutorial.' },
+    { s: 1, t: 'Iniciar sesión', r: 'acceso', nota: 'Correo y contraseña: es la misma cuenta que se usa en la app móvil. Los errores salen en español y se puede recuperar la contraseña con un código enviado al correo.' },
+    { s: 1, t: 'Crear cuenta', r: 'acceso?modo=crear', nota: 'Nombre, nombre visible, correo y contraseña. Si el proyecto lo exige, se confirma el correo con un código de 6 dígitos.' },
+    { s: 1, t: 'Tutorial', r: 'tutorial', nota: 'Pasos cortos que explican cómo funciona la app.' },
+    { s: 2, t: 'Inicio', r: 'inicio', nota: 'Saludo, zona y puntos de la persona, y los cuatro accesos principales. En escritorio la navegación está en la barra lateral y en celular, abajo.' },
+    { s: 2, t: 'Mapa solidario', r: 'mapa', nota: 'Mapa con capas de zonas de riesgo, reportes y recursos. Parte en la zona de la persona (todo el Perú) y muestra los reportes del servidor.' },
+    { s: 2, t: 'Reportar emergencia', r: 'reportar', nota: 'Tres pasos: detalle con foto opcional, ubicación en el mapa con referencia y confirmación. Sin conexión queda pendiente y se envía al volver internet.' },
+    { s: 2, t: 'Necesito ayuda', r: 'solicitar', nota: 'Tipo de ayuda, personas y referencia. La dirección escrita solo la ven quien pide y la coordinación.' },
+    { s: 2, t: 'Ofrecer ayuda', r: 'ofrecer', nota: 'Qué se puede brindar y cuándo. La oferta se puede retirar.' },
+    { s: 2, t: 'Solicitudes cercanas', r: 'solicitudes', nota: 'Solicitudes de la zona con filtros. Se puede apoyar una (suma 10 puntos) y quien pidió puede cancelarla.' },
+    { s: 3, t: 'Voluntarios y recursos', r: 'comunidad', nota: 'Directorio de voluntarios que aceptaron aparecer y recursos disponibles, sin teléfonos ni direcciones.' },
+    { s: 3, t: 'Publicaciones y comentarios', r: 'comunidad?post=p-2', nota: 'Se publica con foto, se da me gusta y se comenta. Cada persona puede borrar lo suyo, con confirmación. Los avisos de me gusta y comentarios los crea el servidor.' },
+    { s: 3, t: 'Avisos', r: 'notificaciones', nota: 'Cambios de estado de reportes y solicitudes, y me gusta o comentarios en las publicaciones. Al tocar un aviso se abre lo que lo causó.' },
+    { s: 4, t: 'Centro de coordinación', r: 'coordinacion', nota: 'Solo para coordinación: indicadores, cambio de estado y prioridad de reportes, estado de solicitudes, asignación de voluntarios e historial.' },
+    { s: 5, t: 'Mi perfil', r: 'perfil', nota: 'Nombre visible, ubicación (departamento, provincia y distrito, o por GPS), voluntariado y cerrar sesión.' }
+];
+
+const MODOS = {
+    movil: {
+        nombre: 'App móvil', secciones: SECCIONES, pantallas: PANTALLAS, base: 'index.html', abrir: 'index.html',
+        sub: (n) => `${n} pantallas de la app móvil (Android), funcionando de punta a punta · Comunidad, prevención y apoyo ante emergencias`
+    },
+    web: {
+        // Se usa "web/" (con barra final) y no "web/index.html": "npx serve" redirige index.html a "/web" sin barra y las rutas
+        // relativas de la app (./assets/...) dejarían de funcionar, dejando la pantalla en blanco.
+        nombre: 'App web', secciones: SECCIONES_WEB, pantallas: PANTALLAS_WEB, base: 'web/', abrir: 'web/',
+        sub: (n) => `${n} pantallas de la app web (React), con la misma cuenta y la misma base de datos que la app móvil`
+    }
+};
+
+let modo = (location.hash === '#web' || localStorage.getItem('tablero_modo') === 'web') && location.hash !== '#movil' ? 'web' : 'movil';
+let dispositivo = localStorage.getItem('tablero_dispositivo') === 'celular' ? 'celular' : 'escritorio'; // solo para la app web
+
+const pantallasActuales = () => MODOS[modo].pantallas;
+const esEscritorio = () => modo === 'web' && dispositivo === 'escritorio';
+const num = (i) => String(i + 1).padStart(2, '0');
+// La marca "embed=1" va en el "#" (no se pierde si el servidor redirige index.html).
+const urlPantalla = (r) => `${MODOS[modo].base}#/${r}${r.includes('?') ? '&' : '?'}embed=1`;
+
+/* ===== Construcción del tablero ===== */
+const contenido = document.getElementById('contenido');
+const indice = document.getElementById('indice');
+const observador = new IntersectionObserver((entradas) => {
+    entradas.forEach(e => {
+        if (e.isIntersecting) {
+            const f = e.target;
+            if (!f.src) f.src = f.dataset.src;
+            observador.unobserve(f);
+        }
+    });
+}, { rootMargin: '400px' });
+
+function dibujarTablero() {
+    const m = MODOS[modo], lista = m.pantallas, grande = esEscritorio();
+    document.getElementById('subtitulo-tablero').textContent = m.sub(lista.length);
+    document.getElementById('b-presentar').textContent = '▶ Presentar desde la pantalla 01';
+    document.getElementById('b-abrir').href = m.abrir;
+    document.getElementById('b-abrir').textContent = modo === 'web' ? 'Abrir la app web completa' : 'Abrir la app móvil completa';
+    document.getElementById('m-movil').setAttribute('aria-pressed', String(modo === 'movil'));
+    document.getElementById('m-web').setAttribute('aria-pressed', String(modo === 'web'));
+    document.getElementById('selector-disp').hidden = modo !== 'web';
+    document.getElementById('d-escritorio').setAttribute('aria-pressed', String(dispositivo === 'escritorio'));
+    document.getElementById('d-celular').setAttribute('aria-pressed', String(dispositivo === 'celular'));
+    document.getElementById('aviso-web').hidden = true;
+    if (modo === 'web') {
+        fetch('web/manifest.webmanifest', { method: 'HEAD' }).then(r => { if (!r.ok) document.getElementById('aviso-web').hidden = false; }).catch(() => {});
+    }
+
+    contenido.innerHTML = '';
+    indice.innerHTML = '';
+    m.secciones.forEach(sec => {
+        const a = document.createElement('a');
+        a.href = '#seccion-' + sec.id;
+        a.innerHTML = `<b style="background:${sec.color}">${sec.id}</b>${sec.titulo}`;
+        indice.appendChild(a);
+
+        const bloque = document.createElement('section');
+        bloque.className = 'seccion';
+        bloque.id = 'seccion-' + sec.id;
+        bloque.innerHTML = `
+            <div class="seccion-cab">
+                <h2 class="insignia" style="background:${sec.color}"><i style="color:${sec.color}">${sec.id}</i>${sec.titulo}</h2>
+                <p>${sec.sub}</p>
+            </div>
+            <div class="rejilla${grande ? ' rejilla-web' : ''}"></div>`;
+        const rejilla = bloque.querySelector('.rejilla');
+
+        lista.forEach((p, i) => {
+            if (p.s !== sec.id) return;
+            const ficha = document.createElement('div');
+            ficha.className = 'ficha' + (grande ? ' ficha-web' : '');
+            ficha.innerHTML = `
+                <button class="tel${grande ? ' telweb' : ''}" aria-label="Abrir en grande la pantalla ${num(i)}: ${p.t}">
+                    <iframe loading="lazy" tabindex="-1" aria-hidden="true" title="Vista previa de ${p.t}" data-src="${urlPantalla(p.r)}"></iframe>
+                </button>
+                <p><span>${num(i)}.</span> ${p.t}</p>`;
+            ficha.querySelector('.tel').addEventListener('click', () => abrirVisor(i));
+            rejilla.appendChild(ficha);
+        });
+        contenido.appendChild(bloque);
+    });
+
+    const aLaVista = document.createElement('span');
+    aLaVista.className = 'ayuda';
+    aLaVista.textContent = 'Toca cualquier pantalla para verla en grande y probarla.';
+    indice.appendChild(aLaVista);
+
+    /* Las vistas previas se cargan solo cuando están cerca de la pantalla (hay muchas y pesan). */
+    document.querySelectorAll('.tel iframe').forEach(f => observador.observe(f));
+}
+
+function elegirModo(nuevo) {
+    if (nuevo === modo) return;
+    modo = nuevo;
+    localStorage.setItem('tablero_modo', modo);
+    history.replaceState(null, '', modo === 'web' ? '#web' : '#movil');
+    dibujarTablero();
+    window.scrollTo({ top: 0 });
+}
+function elegirDispositivo(nuevo) {
+    dispositivo = nuevo;
+    localStorage.setItem('tablero_dispositivo', nuevo);
+    dibujarTablero();
+}
+
+/* ===== Visor ===== */
+const visor = document.getElementById('visor');
+const marco = document.getElementById('v-marco');
+let iframe = document.getElementById('v-iframe');
+let actual = 0, temporizador = null, escalaVisor = 1;
+
+const medidas = () => (esEscritorio() ? { w: 1280, h: 800 } : { w: 390, h: 844 });
+
+function ajustarVisor() {
+    const d = medidas();
+    // En pantallas anchas el visor comparte el ancho con las flechas y el panel de información.
+    const anchoDisponible = window.innerWidth <= 900 ? window.innerWidth - 40 : window.innerWidth - 560;
+    escalaVisor = Math.min(1, (window.innerHeight - 40) / (d.h + 16), anchoDisponible / (d.w + 16));
+    marco.classList.toggle('escritorio', esEscritorio());
+    marco.style.width = Math.round(d.w * escalaVisor) + 16 + 'px';
+    marco.style.height = Math.round(d.h * escalaVisor) + 16 + 'px';
+    iframe.style.width = d.w + 'px';
+    iframe.style.height = d.h + 'px';
+    iframe.style.transform = `scale(${escalaVisor})`;
+}
+
+/** Reemplaza el marco por uno nuevo: así la pantalla siempre carga desde cero (sin estado anterior). */
+function cargarEnVisor(url) {
+    const d = medidas();
+    const nuevo = document.createElement('iframe');
+    nuevo.id = 'v-iframe';
+    nuevo.title = 'Pantalla de la aplicación';
+    nuevo.style.width = d.w + 'px';
+    nuevo.style.height = d.h + 'px';
+    nuevo.style.transform = `scale(${escalaVisor})`;
+    iframe.replaceWith(nuevo);
+    iframe = nuevo;
+    if (url) nuevo.src = url;
+}
+
+function mostrar(i) {
+    const lista = pantallasActuales();
+    actual = (i + lista.length) % lista.length;
+    const p = lista[actual], sec = MODOS[modo].secciones[p.s - 1];
+    cargarEnVisor(urlPantalla(p.r));
+    const etiqueta = document.getElementById('v-seccion');
+    etiqueta.textContent = `${sec.id}. ${sec.titulo}`;
+    etiqueta.style.background = sec.color;
+    document.getElementById('v-titulo').textContent = `${num(actual)}. ${p.t}`;
+    document.getElementById('v-contador').textContent = `${MODOS[modo].nombre} · Pantalla ${actual + 1} de ${lista.length}`;
+    document.getElementById('v-nota').textContent = p.nota;
+    document.getElementById('v-progreso').style.width = ((actual + 1) / lista.length * 100) + '%';
+}
+
+function abrirVisor(i) {
+    visor.classList.add('abierto');
+    document.body.style.overflow = 'hidden';
+    ajustarVisor();
+    mostrar(i);
+    document.getElementById('v-cerrar').focus();
+}
+
+function cerrarVisor() {
+    detenerAuto();
+    visor.classList.remove('abierto');
+    document.body.style.overflow = '';
+    cargarEnVisor('');
+}
+
+function detenerAuto() {
+    clearInterval(temporizador); temporizador = null;
+    document.getElementById('v-auto').textContent = '▶ Recorrido automático';
+}
+
+function alternarAuto() {
+    if (temporizador) return detenerAuto();
+    document.getElementById('v-auto').textContent = '❚❚ Detener recorrido';
+    temporizador = setInterval(() => mostrar(actual + 1), 4500);
+}
+
+document.getElementById('m-movil').addEventListener('click', () => elegirModo('movil'));
+document.getElementById('m-web').addEventListener('click', () => elegirModo('web'));
+document.getElementById('d-escritorio').addEventListener('click', () => elegirDispositivo('escritorio'));
+document.getElementById('d-celular').addEventListener('click', () => elegirDispositivo('celular'));
+document.getElementById('b-presentar').addEventListener('click', () => abrirVisor(0));
+document.getElementById('v-cerrar').addEventListener('click', cerrarVisor);
+document.getElementById('v-prev').addEventListener('click', () => { detenerAuto(); mostrar(actual - 1); });
+document.getElementById('v-sig').addEventListener('click', () => { detenerAuto(); mostrar(actual + 1); });
+document.getElementById('v-auto').addEventListener('click', alternarAuto);
+document.getElementById('v-recargar').addEventListener('click', () => mostrar(actual));
+window.addEventListener('resize', () => { if (visor.classList.contains('abierto')) ajustarVisor(); });
+
+document.addEventListener('keydown', (e) => {
+    if (!visor.classList.contains('abierto')) return;
+    // Si la persona está escribiendo dentro de la pantalla, el foco está en el iframe y no llega aquí.
+    if (e.key === 'Escape') cerrarVisor();
+    else if (e.key === 'ArrowRight') { detenerAuto(); mostrar(actual + 1); }
+    else if (e.key === 'ArrowLeft') { detenerAuto(); mostrar(actual - 1); }
+    else if (e.key === ' ' && document.activeElement.tagName !== 'BUTTON') { e.preventDefault(); alternarAuto(); }
+});
+
+document.getElementById('b-reiniciar').addEventListener('click', () => {
+    if (!confirm('Se borrarán los datos de prueba de este navegador y las pantallas volverán a su estado inicial. ¿Continuar?')) return;
+    ['peru_vive_db_v1', 'cerca-peru-v2', 'cerca-peru-v1'].forEach(k => localStorage.removeItem(k));
+    Object.keys(localStorage).filter(k => k.startsWith('peru_vive_guia_')).forEach(k => localStorage.removeItem(k)); // la guía vuelve a abrirse sola
+    sessionStorage.clear();
+    location.reload();
+});
+
+dibujarTablero();
+</script>
+
+</body>
+</html>

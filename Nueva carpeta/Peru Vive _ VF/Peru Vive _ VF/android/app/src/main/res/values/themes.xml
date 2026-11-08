@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.PeruVive" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/peru_rojo</item>
+        <item name="colorPrimaryDark">@color/peru_rojo_oscuro</item>
+        <item name="colorAccent">@color/peru_rojo</item>
+        <item name="android:windowBackground">@color/blanco</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>
